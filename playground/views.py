@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.db.models import Q, F, Count, Value, Func, ExpressionWrapper, DecimalField
 from django.db.models.functions import Concat
 from django.shortcuts import render
@@ -101,4 +102,18 @@ def say_hello(request):
     #     for promotion in product.promotions.all():
     #         print(promotion.description)
     res = calculate(10, 20)
+    return render(request, 'hello.html', {'name': 'Aida', 'products': products})
+
+
+@transaction.atomic()
+def whole_view_transaction(request):
+    products = Product.objects.filter(unit_price__range=(200, 300), inventory__gt=20)
+    res = calculate(10, 20)
+    return render(request, 'hello.html', {'name': 'Aida', 'products': products})
+
+
+def part_view_transaction(request):
+    with transaction.atomic():
+        products = Product.objects.filter(unit_price__range=(200, 300), inventory__gt=20)
+        res = calculate(10, 20)
     return render(request, 'hello.html', {'name': 'Aida', 'products': products})
